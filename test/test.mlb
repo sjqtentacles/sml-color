@@ -1,0 +1,14 @@
+(* Test executable basis: the library plus the test harness and runner. *)
+
+$(SML_LIB)/basis/basis.mlb
+
+../lib/github.com/sjqtentacles/sml-color/color.mlb
+
+harness.sml
+support.sml
+test_convert.sml
+test_gamma.sml
+test_pack.sml
+test_interp.sml
+entry.sml
+main.sml
