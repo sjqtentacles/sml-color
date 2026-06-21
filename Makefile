@@ -14,9 +14,16 @@ TEST_MLB   := test/test.mlb
 SRCS       := $(wildcard $(LIBDIR)/*.sml $(LIBDIR)/*.sig $(LIBDIR)/*.mlb) \
               $(wildcard test/*.sml) $(TEST_MLB)
 
-.PHONY: all test poly test-poly all-tests clean
+.PHONY: all test poly test-poly all-tests example clean
 
 all: $(BIN)/test-mlton
+
+example: $(BIN)/wheel
+	mkdir -p assets
+	./$(BIN)/wheel
+
+$(BIN)/wheel: $(SRCS) examples/wheel.sml examples/sources.mlb | $(BIN)
+	$(MLTON) -output $@ examples/sources.mlb
 
 $(BIN)/test-mlton: $(SRCS) | $(BIN)
 	$(MLTON) -output $@ $(TEST_MLB)
