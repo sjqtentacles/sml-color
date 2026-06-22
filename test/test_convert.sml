@@ -58,6 +58,52 @@ struct
       val () = checkRgb "HSV hue -120 = hue 240"
                  (C.hsvToRgb {h=240.0, s=1.0, v=1.0},
                   C.hsvToRgb {h= ~120.0, s=1.0, v=1.0})
+
+      val _ = Harness.section "CIELAB reference vectors (D65)"
+      (* Published sRGB->Lab values; ~1e-2 tolerance for sRGB rounding. *)
+      val labEps = 1E~2
+      fun nearLab name ((el, ea, eb), lab : C.lab) =
+        Harness.check name
+          (Real.abs (el - #l lab) <= labEps
+           andalso Real.abs (ea - #a lab) <= labEps
+           andalso Real.abs (eb - #b lab) <= labEps)
+      val () = nearLab "black -> (0,0,0)"
+                 ((0.0, 0.0, 0.0), C.toLab (rgb (0.0, 0.0, 0.0)))
+      val () = nearLab "white -> (100,0,0)"
+                 ((100.0, 0.0, 0.0), C.toLab (rgb (1.0, 1.0, 1.0)))
+      val () = nearLab "red -> (53.24,80.09,67.20)"
+                 ((53.24, 80.09, 67.20), C.toLab (rgb (1.0, 0.0, 0.0)))
+      val () = nearLab "green -> (87.74,-86.18,83.18)"
+                 ((87.74, ~86.18, 83.18), C.toLab (rgb (0.0, 1.0, 0.0)))
+      val () = nearLab "blue -> (32.30,79.19,-107.86)"
+                 ((32.30, 79.19, ~107.86), C.toLab (rgb (0.0, 0.0, 1.0)))
+
+      val _ = Harness.section "deltaE (CIE76 / CIEDE2000)"
+      val () = Harness.check "deltaE76 black/white ~ 100"
+                 (Real.abs (C.deltaE (rgb (0.0,0.0,0.0), rgb (1.0,1.0,1.0))
+                            - 100.0) <= 1E~2)
+      val () = checkClose "deltaE red/red = 0"
+                 (0.0, C.deltaE (rgb (1.0,0.0,0.0), rgb (1.0,0.0,0.0)))
+      val () = checkClose "deltaE76 lab/itself = 0"
+                 (0.0, C.deltaE76 (C.toLab (rgb (0.2,0.4,0.6)),
+                                   C.toLab (rgb (0.2,0.4,0.6))))
+      (* Sharma et al. CIEDE2000 reference pair (expected dE00 = 2.0425). *)
+      val sharma1 = { l = 50.0, a = 2.6772, b = ~79.7751 } : C.lab
+      val sharma2 = { l = 50.0, a = 0.0,    b = ~82.7485 } : C.lab
+      val () = Harness.check "CIEDE2000 Sharma pair ~ 2.0425"
+                 (Real.abs (C.deltaE2000 (sharma1, sharma2) - 2.0425) <= 1E~3)
+      val () = Harness.check "CIEDE2000 self = 0"
+                 (Real.abs (C.deltaE2000 (sharma1, sharma1)) <= 1E~9)
+
+      val _ = Harness.section "Lab / LCh round-trips over swatches"
+      val () = List.app
+        (fn c => Harness.check "rgb->lab->rgb"
+                   (C.approxRgb 1E~4 (c, C.fromLab (C.toLab c))))
+        swatches
+      val () = List.app
+        (fn c => Harness.check "rgb->lch->rgb"
+                   (C.approxRgb 1E~4 (c, C.fromLch (C.toLch c))))
+        swatches
     in
       ()
     end

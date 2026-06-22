@@ -16,7 +16,7 @@ ramps, encoded to PNG via the vendored `sml-image`.*
 
 ## Status
 
-- 104 assertions, green on MLton and Poly/ML.
+- 136 assertions, green on MLton and Poly/ML.
 - Basis-library only; deterministic across compilers.
 
 ## Install
@@ -68,14 +68,31 @@ val grey = Color.mix ( { r=0.0,g=0.0,b=0.0,a=1.0 }
 
 | Group | Functions |
 | --- | --- |
-| Types | `rgb`, `rgba`, `hsv`, `hsl` (records of reals) |
+| Types | `rgb`, `rgba`, `hsv`, `hsl`, `lab`, `lch` (records of reals) |
 | Clamp | `clampRgb`, `clampRgba`, `rgbToRgba`, `rgbaToRgb` |
 | Conversions | `rgbToHsv`, `hsvToRgb`, `rgbToHsl`, `hslToRgb` |
+| CIELAB | `toLab`, `fromLab`, `toLch`, `fromLch`, `labToLch`, `lchToLab` |
+| Difference | `deltaE76`, `deltaE2000`, `deltaE` (sRGB CIE76) |
 | Gamma | `srgbToLinear`, `linearToSrgb`, `rgbToLinear`, `rgbToSrgb` |
 | Packing | `pack`, `unpack` (`Word32`, order `0xRRGGBBAA`) |
 | Hex | `fromHex`, `toHex`, `toHexRgb` |
 | Interpolation | `lerp` (unclamped), `mix` (clamps `t`) |
-| Comparison | `approx`, `approxRgb` |
+| Comparison | `approx`, `approxRgb`, `approxLab` |
+
+### CIELAB and color difference
+
+`toLab` / `fromLab` convert between sRGB and CIE L\*a\*b\* using the standard
+sRGB linearization, the sRGB→XYZ matrix and the D65 white point
+`(Xn, Yn, Zn) = (0.95047, 1.0, 1.08883)`. `toLch` / `fromLch` give the
+cylindrical form (lightness, chroma, hue in degrees). `deltaE` measures the
+perceptual difference between two sRGB colors with CIE76 (Euclidean distance
+in Lab); `deltaE76` and `deltaE2000` operate directly on `lab` values.
+
+```sml
+val red = Color.toLab { r = 1.0, g = 0.0, b = 0.0 }   (* ~(53.24, 80.09, 67.20) *)
+val d   = Color.deltaE ( { r=0.0,g=0.0,b=0.0 }
+                       , { r=1.0,g=1.0,b=1.0 } )        (* ~100.0 *)
+```
 
 ### Conventions
 
