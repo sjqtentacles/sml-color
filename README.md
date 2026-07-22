@@ -1,5 +1,7 @@
 # sml-color
 
+[![CI](https://github.com/sjqtentacles/sml-color/actions/workflows/ci.yml/badge.svg)](https://github.com/sjqtentacles/sml-color/actions/workflows/ci.yml)
+
 Pure Standard ML color-space math: RGB/RGBA, HSV, HSL, sRGB gamma, 32-bit
 packing, and hex parsing/printing — **no FFI, no external dependencies**, and
 byte-identical under both [MLton](http://mlton.org/) and
